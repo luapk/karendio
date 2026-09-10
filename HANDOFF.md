@@ -299,11 +299,26 @@ joints, a sheet row height that swallows the sprite below it.
 Source was a 15 s 1080×1920 clip plus two *Kung-Fu Master* screenshots and a photo of the
 person the lead is based on.
 
-**Karen** — dark shaggy bob with a soft uneven fringe and pieces past the jaw; brown irises in
-visible white with liner and a catchlight; nose stud, jaw hoop, stacked silver chains; black
-three-stripe cropped tee; bare tattooed midriff with an inset waist; denim cut-offs with a
-studded belt and frayed hem; knee-high black Converse with four eyelet pairs and white rubber
-toe caps.
+**Karen** — art-directed from two photo references (a portrait and a high-kick shot),
+which supersede the earlier clip-only description. Dark chin-length bob with a **wispy, uneven,
+piecey fringe** — short over the eyes so the brows stay visible, longer over the temples, with
+two strands falling past the cheek. **Strong dark brows** and **winged liner** are the two
+features that carry the likeness at this size; brown irises in visible white with a catchlight,
+nose stud, jaw hoop. Glossy lip with a highlight pixel. One **chunky curb chain** at the
+collarbone (dark links with light centres, so it reads against white). **White cropped tee**
+with a dark graphic print and short sleeves, bare tattooed midriff with an inset waist,
+**khaki/tan trousers** with a studded belt, **black Converse high-tops** with white toe caps and
+sole edges — the boot is a shaft painted over the ankle end of the shin, not the whole shin.
+
+The white top is also a gameplay decision: against a dark street a black tee made her
+disappear into the shopfronts, and she now reads instantly at 1×.
+
+**The kick** is the character pose. It is a **high kick with the foot above the crown**, the leg
+staggered forward across three segments so it reads as a diagonal rather than a vertical bar,
+the torso and head leaning away from it, and both fists still up in guard. `kickup` is the
+matching chamber (knee driven to the chest, shin folded). The kicking leg is authored longer
+than the anatomical skeleton on purpose — segment *thickness* stays at the standard 9 px, which
+is the rule that matters.
 
 **Thugs** — skull-face-painted punk with spiked hair in an open leather jacket over a red tee;
 bald bruiser in a stained vest with a gold rope and medallion and knuckle tattoos; hooded knifer

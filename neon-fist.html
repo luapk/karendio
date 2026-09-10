@@ -194,16 +194,18 @@ var PAL = {
 };
 
 var HERO = {
-  hair: '#1a1218', hairHi: '#3a2a34', skin: '#f0c8a8', skinSh: '#c99a7c',
-  eyeW: '#f6f2ee', iris: '#5a3a1e', liner: '#1a0e12', lips: '#b8506a',
-  tee: '#16121a', stripe: '#e8e6ec', tattoo: '#2b5c5a', denim: '#3e5a8a', denimSh: '#2c4468',
-  belt: '#201a22', stud: '#c8c8d0', shoe: '#14121a', shoeW: '#ecebe8', eyelet: '#cfd0d6', chain: '#c8ccd8', hoop: '#d0d4de'
+  hair: '#1b1016', hairHi: '#43262f', skin: '#f0c8a8', skinSh: '#c99a7c',
+  eyeW: '#f6f2ee', iris: '#5a3a1e', liner: '#150b10', brow: '#241318', lips: '#c05a70', lipHi: '#e2909e',
+  tee: '#f0ece4', teeSh: '#c6c0b4', print: '#1a1620',
+  tattoo: '#2b5c5a', trouser: '#b09872', trouserSh: '#87724f',
+  belt: '#201a22', stud: '#c8c8d0', shoe: '#14121a', shoeW: '#ecebe8', eyelet: '#cfd0d6',
+  chain: '#e2e6f0', chainMid: '#7a7e8a', chainSh: '#565a66', hoop: '#d0d4de'
 };
 
 // Every fighter kit: base colours per body part + a name so the renderer can
 // pick the detail decorator.  fat widens the torso symmetrically (integer px).
 var KIT = {
-  hero:    { type: 'hero',    fat: 0, skin: HERO.skin, hair: HERO.hair, top: HERO.tee, hips: HERO.denim, thigh: HERO.skin, shin: HERO.shoe, foot: HERO.shoe, arm: HERO.skin, sleeve: HERO.tee },
+  hero:    { type: 'hero',    fat: 0, skin: HERO.skin, hair: HERO.hair, top: HERO.tee, hips: HERO.trouser, thigh: HERO.trouser, shin: HERO.trouser, foot: HERO.shoe, arm: HERO.skin, sleeve: HERO.tee },
   punk:    { type: 'punk',    fat: 0, skin: '#e0b898', hair: '#101014', top: '#1a1418', top2: '#c8202a', hips: '#2a2a36', thigh: '#2a2a36', shin: '#2a2a36', foot: '#141018', arm: '#1a1418', sleeve: '#1a1418' },
   bruiser: { type: 'bruiser', fat: 6, skin: '#d8a888', hair: '#d8a888', top: '#d8d0c0', top2: '#8a6a4a', hips: '#2c3a2a', thigh: '#2c3a2a', shin: '#2c3a2a', foot: '#4a3020', arm: '#d8a888', sleeve: '#d8d0c0' },
   knifer:  { type: 'knifer',  fat: 0, skin: '#c8a080', hair: '#4a4a56', top: '#4a4a56', top2: '#3a3a44', hips: '#2a3048', thigh: '#2a3048', shin: '#2a3048', foot: '#dcdcdc', arm: '#4a4a56', sleeve: '#4a4a56' },
@@ -261,19 +263,23 @@ var POSE = {
     legB: [[-12, -26, 14, 9], [-14, -17, 9, 11]], footB: [-16, -6, 14, 6],
     legF: [[0, -26, 14, 9], [6, -17, 9, 11]], footF: [4, -6, 14, 6]
   },
+  // Chamber: knee driven up to the chest, shin folded, fists tight at the chin.
   kickup: {
-    head: [-11, -96, 18, 22], torso: [-12, -70, 20, 28], hips: [-10, -42, 18, 10],
-    armB: [[-16, -68, 7, 13], [-15, -56, 7, 10], [-16, -47, 8, 8]],
-    armF: [[6, -68, 7, 12], [4, -58, 7, 11], [3, -66, 8, 8]],
-    legB: [[-10, -32, 9, 15], [-11, -17, 9, 11]], footB: [-13, -6, 14, 6],
-    legF: [[2, -40, 13, 9], [8, -31, 9, 12]], footF: [6, -19, 12, 6]
+    head: [-13, -96, 18, 22], torso: [-13, -70, 20, 28], hips: [-11, -42, 18, 10],
+    armB: [[-17, -68, 7, 13], [-15, -68, 7, 13], [-16, -76, 8, 8]],
+    armF: [[4, -68, 7, 13], [2, -70, 7, 13], [1, -78, 8, 8]],
+    legB: [[-10, -32, 9, 15], [-10, -17, 9, 11]], footB: [-11, -6, 14, 6],
+    legF: [[0, -60, 9, 18], [3, -60, 9, 17]], footF: [0, -44, 12, 6]
   },
+  // High kick, per reference: foot above the crown, torso leaning away from it,
+  // both fists still up in guard.  The kicking leg is authored long on purpose;
+  // its segments keep the standard 9px thickness.
   kick: {
-    head: [-15, -94, 18, 22], torso: [-15, -68, 20, 28], hips: [-11, -41, 18, 10],
-    armB: [[-20, -66, 7, 13], [-24, -54, 7, 11], [-26, -44, 8, 8]],
-    armF: [[3, -66, 7, 12], [-2, -56, 9, 7], [-10, -57, 8, 8]],
-    legB: [[-11, -32, 9, 15], [-12, -17, 9, 11]], footB: [-14, -6, 14, 6],
-    legF: [[5, -40, 15, 9], [20, -40, 12, 9], [32, -43, 7, 13]], footF: null
+    head: [-19, -93, 18, 22], torso: [-16, -71, 20, 28], hips: [-12, -43, 18, 10],
+    armB: [[-19, -69, 7, 13], [-17, -69, 7, 14], [-18, -77, 8, 8]],
+    armF: [[1, -69, 7, 13], [-1, -71, 7, 14], [-2, -79, 8, 8]],
+    legB: [[-10, -33, 9, 15], [-10, -18, 9, 12]], footB: [-11, -6, 14, 6],
+    legF: [[2, -60, 9, 21], [9, -82, 9, 23], [15, -99, 11, 17]], footF: null
   },
   crouch: {
     head: [-6, -68, 18, 22], torso: [-9, -46, 20, 20], hips: [-9, -28, 18, 10],
@@ -520,47 +526,69 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
 
   function heroDeco() {
     if (!flat) {
-      // hair: shaggy bob, uneven fringe, pieces past the jaw
-      P(hx - 1, hy - 2, hw + 2, 8, HERO.hair);
-      P(hx + 1, hy - 1, hw - 4, 1, HERO.hairHi);
-      P(hx - 2, hy + 4, 3, 15, HERO.hair);            // back piece to the jaw
-      P(hx + hw - 1, hy + 5, 3, 11, HERO.hair);       // front piece
-      // fringe: notched
-      var fr = [0, 1, 3, 4, 5, 8, 9, 12, 13, 15, 16];
-      for (var i = 0; i < fr.length; i++) P(hx + fr[i], hy + 6, 1, (i % 3 === 1) ? 3 : 2, HERO.hair);
-      P(hx + 2, hy + 6, 1, 4, HERO.hair);
-      // face
+      // hair: chin-length bob, wispy uneven fringe, pieces past the jaw
+      P(hx - 1, hy - 2, hw + 2, 7, HERO.hair);
+      P(hx + 2, hy - 1, hw - 6, 1, HERO.hairHi);
+      P(hx - 2, hy + 3, 3, 16, HERO.hair);              // back piece past the jaw
+      P(hx + hw - 1, hy + 4, 3, 13, HERO.hair);         // front piece
+      // fringe strands: short over the eyes, long over brow and temples
+      var fr = [7, 6, 4, 2, 2, 2, 5, 6, 2, 2, 2, 2, 2, 5, 6, 5, 4, 7];
+      for (var i = 0; i < hw; i++) P(hx + i, hy + 4, 1, fr[i], HERO.hair);
+      // strong brows, then eyes and winged liner
+      P(hx + 3, hy + 8, 3, 1, HERO.brow); P(hx + 8, hy + 8, 5, 1, HERO.brow);
       face2(hx + 4, hy + 10, HERO.iris, HERO.liner);
-      P(hx + 11, hy + 12, 1, 1, HERO.eyeW);          // catchlight
-      P(hx + hw - 3, hy + 13, 1, 1, HERO.hoop);        // nose stud
-      P(hx + 9, hy + 16, 3, 1, HERO.lips);
-      P(hx + hw - 4, hy + 15, 1, 1, HERO.skinSh);      // nose shadow
-      P(hx + 1, hy + hh - 3, 1, 2, HERO.hoop);         // jaw hoop
-      // chains
-      P(tx + 3, ty + 2, tw - 6, 1, HERO.chain); P(tx + 5, ty + 4, tw - 10, 1, HERO.chain); P(tx + 6, ty + 5, tw - 12, 1, HERO.chain);
-      // bare midriff with inset waist + tattoo
-      var mh = Math.max(4, th - 20);
+      P(hx + 12, hy + 11, 2, 1, HERO.liner);            // flick of the wing
+      P(hx + 11, hy + 10, 1, 1, HERO.eyeW);             // catchlight
+      P(hx + hw - 3, hy + 13, 1, 1, HERO.hoop);         // nose stud
+      P(hx + hw - 4, hy + 15, 1, 1, HERO.skinSh);       // nose shadow
+      P(hx + 9, hy + 16, 4, 1, HERO.lips); P(hx + 10, hy + 16, 2, 1, HERO.lipHi);
+      P(hx + 1, hy + hh - 3, 1, 2, HERO.hoop);          // jaw hoop
+      // face-framing strands last, so they fall over the cheek
+      P(hx, hy + 5, 1, 13, HERO.hair); P(hx + hw - 1, hy + 5, 1, 12, HERO.hair);
+      // chunky curb chain at the collarbone (needs dark links to read on white)
+      var cy = ty + 1;
+      P(tx + 2, cy, tw - 4, 2, HERO.chainMid);
+      for (var ci = 3; ci < tw - 5; ci += 3) { P(tx + ci, cy, 2, 1, HERO.chain); P(tx + ci, cy + 1, 1, 1, HERO.chainSh); }
+      P(tx + 2, cy + 2, tw - 4, 1, HERO.teeSh);
+      // graphic print on the white tee
+      P(tx + 6, ty + 8, 8, 8, HERO.print);
+      P(tx + 6, ty + 8, 3, 1, HERO.tee); P(tx + 6, ty + 9, 1, 1, HERO.tee);
+      P(tx + 12, ty + 14, 2, 2, HERO.tee); P(tx + 13, ty + 13, 1, 1, HERO.tee);
+      P(tx + 8, ty + 10, 3, 3, HERO.tee); P(tx + 10, ty + 12, 3, 1, HERO.tee); P(tx + 9, ty + 14, 2, 1, HERO.tee);
+      // cropped hem, then the bare tattooed midriff with an inset waist
+      var mh = Math.max(4, th - 22);
+      P(tx, ty + th - mh - 1, tw, 1, HERO.teeSh);
       P(tx + 1, ty + th - mh, tw - 2, mh, HERO.skin);
       P(tx + 1, ty + th - mh, 1, mh, HERO.skinSh); P(tx + 1, ty + th - 1, tw - 2, 1, HERO.skinSh);
       P(tx + 11, ty + th - mh + 1, 4, 1, HERO.tattoo); P(tx + 12, ty + th - mh + 2, 2, 2, HERO.tattoo); P(tx + 10, ty + th - mh + 3, 1, 1, HERO.tattoo);
-      // tee hem stripes
-      P(tx, ty + th - mh - 1, tw, 1, HERO.stripe);
     }
-    // belt + studs, frayed hem on the cut-offs
+    // studded belt over the trousers
     P(hp[0], hp[1], hp[2], 2, HERO.belt);
-    for (var s = 1; s < hp[2]; s += 3) P(hp[0] + s, hp[1], 1, 1, HERO.stud);
-    for (var f = 0; f < hp[2]; f += 2) P(hp[0] + f, hp[1] + hp[3] - 1, 1, 1, HERO.denimSh);
-    // converse: eyelets and toe caps
+    for (var sd = 1; sd < hp[2]; sd += 3) P(hp[0] + sd, hp[1], 1, 1, HERO.stud);
+    P(hp[0], hp[1] + hp[3] - 1, hp[2], 1, HERO.trouserSh);
+    // trouser cuff at the boot, converse eyelets and white toe caps
     legDeco(p.legB, p.footB); legDeco(p.legF, p.footF);
     function legDeco(l, foot) {
       if (!l) return;
-      var sh = l[1];
-      if (sh[3] >= sh[2]) { for (var y = 2; y < sh[3] - 1; y += 2) { P(sh[0] + 3, sh[1] + y, 1, 1, HERO.eyelet); P(sh[0] + 5, sh[1] + y, 1, 1, HERO.eyelet); } }
-      else { for (var x = 2; x < sh[2] - 1; x += 2) { P(sh[0] + x, sh[1] + 2, 1, 1, HERO.eyelet); P(sh[0] + x, sh[1] + 4, 1, 1, HERO.eyelet); } }
-      var ft = foot || l[2];
+      var thg = l[0], sh = l[1], ft = foot || l[2];
+      if (thg[3] >= thg[2]) P(thg[0], thg[1] + thg[3] - 2, thg[2], 1, HERO.trouserSh);
+      else P(thg[0] + thg[2] - 1, thg[1], 1, thg[3], HERO.trouserSh);
+      // Converse shaft over the ANKLE end of the shin - the end nearest the
+      // foot rect, which is the top of the shin on a high kick and the bottom
+      // everywhere else.  Same shoulder-end problem as the sleeves.
+      var vert = sh[3] >= sh[2];
+      var shaft = Math.max(4, Math.min(9, (vert ? sh[3] : sh[2]) - 3));
+      var bx = sh[0], by = sh[1], bw = sh[2], bh = sh[3];
+      if (vert) { by = (ft && (ft[1] + ft[3] / 2) < (sh[1] + sh[3] / 2)) ? sh[1] : sh[1] + sh[3] - shaft; bh = shaft; }
+      else { bx = (ft && (ft[0] + ft[2] / 2) > (sh[0] + sh[2] / 2)) ? sh[0] + sh[2] - shaft : sh[0]; bw = shaft; }
+      P(bx, by, bw, bh, HERO.shoe);
+      P(bx, by, bw, 1, shade(HERO.shoe, 1.6));
+      var i2;
+      if (vert) { for (i2 = 1; i2 < bh - 1; i2 += 2) { P(bx + 3, by + i2, 1, 1, HERO.eyelet); P(bx + 5, by + i2, 1, 1, HERO.eyelet); } }
+      else { for (i2 = 1; i2 < bw - 1; i2 += 2) { P(bx + i2, by + 2, 1, 1, HERO.eyelet); P(bx + i2, by + 4, 1, 1, HERO.eyelet); } }
       if (!ft) return;
       if (ft[2] >= ft[3]) { P(ft[0] + ft[2] - 4, ft[1] + 1, 4, ft[3] - 2, HERO.shoeW); P(ft[0], ft[1] + ft[3] - 1, ft[2], 1, HERO.shoeW); }
-      else { P(ft[0] + 1, ft[1], ft[2] - 2, 4, HERO.shoeW); P(ft[0] + ft[2] - 1, ft[1], 1, ft[3], HERO.shoeW); }
+      else { P(ft[0] + 1, ft[1], ft[2] - 3, 3, HERO.shoeW); P(ft[0] + ft[2] - 2, ft[1] + 1, 2, ft[3] - 1, HERO.shoeW); }
     }
   }
 
@@ -637,15 +665,16 @@ function decorateArm(e, k, p, P, face) {
   var a = p.armF;
   if (!a) return;
   var up = a[0], fi = a[2];
+  // a horizontal upper arm has its shoulder at the end nearest the spine, so
+  // the cuff belongs on the far end whichever way the arm points
+  function cuff(u) {
+    if (!u) return;
+    if (u[3] >= u[2]) P(u[0], u[1] + u[3] - 1, u[2], 1, HERO.teeSh);
+    else P(Math.abs(u[0]) > Math.abs(u[0] + u[2]) ? u[0] : u[0] + u[2] - 1, u[1], 1, u[3], HERO.teeSh);
+  }
   if (k.type === 'hero') {
-    // three-stripe cropped tee sleeve on the upper arm (vertical or horizontal)
-    if (up[3] >= up[2]) { P(up[0] + 1, up[1] + 1, 1, 6, HERO.stripe); P(up[0] + 3, up[1] + 1, 1, 6, HERO.stripe); P(up[0] + 5, up[1] + 1, 1, 6, HERO.stripe); }
-    else { var sx = up[0] + up[2] - 7; P(sx, up[1] + 1, 6, 1, HERO.stripe); P(sx, up[1] + 3, 6, 1, HERO.stripe); P(sx, up[1] + 5, 6, 1, HERO.stripe); }
-    var ub = p.armB && p.armB[0];
-    if (ub) {
-      if (ub[3] >= ub[2]) { P(ub[0] + 1, ub[1] + 1, 1, 6, HERO.stripe); P(ub[0] + 3, ub[1] + 1, 1, 6, HERO.stripe); P(ub[0] + 5, ub[1] + 1, 1, 6, HERO.stripe); }
-      else { P(ub[0] + 1, ub[1] + 1, 6, 1, HERO.stripe); P(ub[0] + 1, ub[1] + 3, 6, 1, HERO.stripe); P(ub[0] + 1, ub[1] + 5, 6, 1, HERO.stripe); }
-    }
+    // short white sleeve: shade the cuff at the elbow end, never the shoulder
+    cuff(a[0]); cuff(p.armB && p.armB[0]);
     P(fi[0] + 1, fi[1] + 3, fi[2] - 2, 1, HERO.skinSh);   // knuckle line
   } else if (k.type === 'bruiser') {
     P(fi[0] + 1, fi[1] + 2, 1, 1, '#2a4a8a'); P(fi[0] + 3, fi[1] + 2, 1, 1, '#2a4a8a'); P(fi[0] + 5, fi[1] + 2, 1, 1, '#2a4a8a');
