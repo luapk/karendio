@@ -56,7 +56,7 @@ comments in this order (search for the banner name rather than a line number):
 | BACKGROUND | `THEMES`, `buildScene`, `brickWall`, `makeSign`, `drawCar`, `drawBackground`, `drawWeather` |
 | GAME STATE | `G`, `cam`, `newPlayer`, `makeEnemy`, `startStage`, `resetGame`, high score |
 | EFFECTS | `spawnSparks`, `spawnDust`, `spawnCoins`, `spawnWord`, `updateFx`, `drawFx` |
-| AUDIO | `audioInit`, `tone`, `noise`, `SFX`, `musicSet`, `musicTick` |
+| AUDIO | `audioInit`, `tone`, `noise`, `voice` (the kiai), `SFX`, `musicSet`, `musicTick` |
 | INPUT | `KEYMAP`, `press`/`take` (150 ms input buffer), gamepad polling, touch pad wiring |
 | COMBAT HELPERS | `ATK`, `ENEMY_ATK`, `inReach`, `evades`, tokens, `hurtEnemy`, `hurtPlayer` |
 | UPDATE | `updatePlayer`, `updateEnemy`, `pickAttack`, `spawnWave`, `updateKnives`, `updateCamera`, `updateWorld` |
@@ -251,6 +251,20 @@ on clear, difficulty scales off `lvl()` = `stage − 1` (enemy speed +8 %/level,
 floored at 60 %, enemy cap 3 → 4 at level 3). Losing a life clears the street and refills the
 timer; the boss steps back but keeps his damage.
 
+**The kiai.** Every kick, sweep, jump kick and special throws a **"hee-ya"**. There are no
+samples in this project, so `voice()` synthesises it: a sawtooth glottal source pushed through
+two swept bandpass formants. /i/ as in "hee" sits at F1 300 / F2 2300, /a/ as in "ya" at
+F1 760 / F2 1180, and gliding the pair at the syllable break is what makes it read as a voice
+rather than a beep. The envelope dips between syllables and peaks higher on the "ya". Pitch and
+formants are jittered per call, and `SFX.kiai` rate-limits to one shout per 0.42 s so a mashed
+kick does not stack a dozen of them. The special shouts lower and longer.
+
+Because the bandpass filters at Q 9-12 throw away most of the source energy, the formant gains
+sit well above 1. Verify a change with `__NF.renderVoice()`, which renders it through an
+`OfflineAudioContext` and hands back the buffer: peak RMS should land near 0.11 with max
+|sample| under 0.4, and the zero-crossing rate must **fall** across the syllable break, which is
+the cheap proof that the formants really glide.
+
 **Music:** `musicTick` is a 16-step sequencer scheduled 120 ms ahead on `AC.currentTime`.
 Drums are fixed; the bass follows one of three progressions by mode (`a` street, `b` rain,
 `boss`, `title`); the lead is a seeded random walk on a minor scale, so every stage has its own
@@ -299,19 +313,34 @@ joints, a sheet row height that swallows the sprite below it.
 Source was a 15 s 1080×1920 clip plus two *Kung-Fu Master* screenshots and a photo of the
 person the lead is based on.
 
-**Karen** — art-directed from two photo references (a portrait and a high-kick shot),
-which supersede the earlier clip-only description. Dark chin-length bob with a **wispy, uneven,
-piecey fringe** — short over the eyes so the brows stay visible, longer over the temples, with
-two strands falling past the cheek. **Strong dark brows** and **winged liner** are the two
-features that carry the likeness at this size; brown irises in visible white with a catchlight,
-nose stud, jaw hoop. Glossy lip with a highlight pixel. One **chunky curb chain** at the
-collarbone (dark links with light centres, so it reads against white). **White cropped tee**
-with a dark graphic print and short sleeves, bare tattooed midriff with an inset waist,
-**khaki/tan trousers** with a studded belt, **black Converse high-tops** with white toe caps and
-sole edges — the boot is a shaft painted over the ankle end of the shin, not the whole shin.
+**Karen** — art-directed from three photo references, which supersede the earlier clip-only
+description. Dark hair with a **fringe kept short over the eyes** so the brows stay visible, and
+length falling past the shoulder. **Strong dark brows** and **winged liner** are the two features
+that carry the likeness at this size; brown irises in visible white with a catchlight, nose stud,
+jaw hoop, glossy lip with a highlight pixel. One **chunky curb chain** at the collarbone.
 
-The white top is also a gameplay decision: against a dark street a black tee made her
-disappear into the shopfronts, and she now reads instantly at 1×.
+Kit, exactly as referenced: a **black three-stripe zip crop top** — stand collar, full-length
+front zip with a pull, a small chest logo mark, and three white stripes running down each sleeve
+from the shoulder seam. Then a **bare tattooed midriff** with an inset waist, **denim cut-offs**
+with a studded belt and a frayed hem, bare thighs, and **knee-high black Converse** where the
+whole shin is boot, with eyelet pairs up the shaft and white toe caps and soles.
+
+Two things about that kit are load-bearing, not decoration:
+
+- **The stripes and the denim are what make her readable.** A black top on a dark street is a
+  camouflage problem. An earlier build solved it by turning the top white, which read instantly
+  but was wrong. The correct fix is contrast *within* the silhouette: six white sleeve stripes, a
+  blue denim band at the hips, a light skin mass across midriff and thighs, and white boot
+  detail, plus a 1 px rim light down the front edge of the torso. Judge any change to her
+  palette against `shots/play-05-combat@3x.png`, never against a flat backdrop.
+- **The boot covers the entire shin.** On a raised leg that is a long black bar, so it needs
+  internal detail or the high kick reads as a plank. The eyelet pairs and the knee-end cuff
+  highlight exist for that reason. The cuff end is found from the foot rect, so it lands at the
+  knee whichever way the leg points.
+
+Sleeve tattoos are hinted as **one connected band on the forearm, never scattered dots** — at
+this size loose specks on skin read as dirt, which is the same trap the art-direction rule at
+the end of this document describes.
 
 **The kick** is the character pose. It is a **high kick with the foot above the crown**, the leg
 staggered forward across three segments so it reads as a diagonal rather than a vertical bar,

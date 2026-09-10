@@ -207,16 +207,18 @@ var PAL = {
 var HERO = {
   hair: '#1b1016', hairHi: '#43262f', skin: '#f0c8a8', skinSh: '#c99a7c',
   eyeW: '#f6f2ee', iris: '#5a3a1e', liner: '#150b10', brow: '#241318', lips: '#c05a70', lipHi: '#e2909e',
-  tee: '#f0ece4', teeSh: '#c6c0b4', print: '#1a1620',
-  tattoo: '#2b5c5a', trouser: '#b09872', trouserSh: '#87724f',
-  belt: '#201a22', stud: '#c8c8d0', shoe: '#14121a', shoeW: '#ecebe8', eyelet: '#cfd0d6',
-  chain: '#e2e6f0', chainMid: '#7a7e8a', chainSh: '#565a66', hoop: '#d0d4de'
+  // black three-stripe zip crop top: near-black needs an explicit rim and a
+  // lighter collar, or it merges with the shopfronts behind her
+  tee: '#16121a', teeHi: '#2c2634', teeRim: '#3c3648', stripe: '#f2f0ec', zip: '#9a9aa6',
+  tattoo: '#2b5c5a', denim: '#3e5a8a', denimSh: '#2c4468',
+  belt: '#201a22', stud: '#c8c8d0', shoe: '#14121a', shoeW: '#ecebe8', eyelet: '#cfd0d6', bootHi: '#3a3644',
+  chain: '#e2e6f0', chainSh: '#7a7e8a', hoop: '#d0d4de'
 };
 
 // Every fighter kit: base colours per body part + a name so the renderer can
 // pick the detail decorator.  fat widens the torso symmetrically (integer px).
 var KIT = {
-  hero:    { type: 'hero',    fat: 0, skin: HERO.skin, hair: HERO.hair, top: HERO.tee, hips: HERO.trouser, thigh: HERO.trouser, shin: HERO.trouser, foot: HERO.shoe, arm: HERO.skin, sleeve: HERO.tee },
+  hero:    { type: 'hero',    fat: 0, skin: HERO.skin, hair: HERO.hair, top: HERO.tee, hips: HERO.denim, thigh: HERO.skin, shin: HERO.shoe, foot: HERO.shoe, arm: HERO.skin, sleeve: HERO.tee },
   punk:    { type: 'punk',    fat: 0, skin: '#e0b898', hair: '#101014', top: '#1a1418', top2: '#c8202a', hips: '#2a2a36', thigh: '#2a2a36', shin: '#2a2a36', foot: '#141018', arm: '#1a1418', sleeve: '#1a1418' },
   bruiser: { type: 'bruiser', fat: 6, skin: '#d8a888', hair: '#d8a888', top: '#d8d0c0', top2: '#8a6a4a', hips: '#2c3a2a', thigh: '#2c3a2a', shin: '#2c3a2a', foot: '#4a3020', arm: '#d8a888', sleeve: '#d8d0c0' },
   knifer:  { type: 'knifer',  fat: 0, skin: '#c8a080', hair: '#4a4a56', top: '#4a4a56', top2: '#3a3a44', hips: '#2a3048', thigh: '#2a3048', shin: '#2a3048', foot: '#dcdcdc', arm: '#4a4a56', sleeve: '#4a4a56' },
@@ -537,69 +539,65 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
 
   function heroDeco() {
     if (!flat) {
-      // hair: chin-length bob, wispy uneven fringe, pieces past the jaw
+      // hair: blunt fringe, length past the shoulder
       P(hx - 1, hy - 2, hw + 2, 7, HERO.hair);
       P(hx + 2, hy - 1, hw - 6, 1, HERO.hairHi);
-      P(hx - 2, hy + 3, 3, 16, HERO.hair);              // back piece past the jaw
-      P(hx + hw - 1, hy + 4, 3, 13, HERO.hair);         // front piece
-      // fringe strands: short over the eyes, long over brow and temples
-      var fr = [7, 6, 4, 2, 2, 2, 5, 6, 2, 2, 2, 2, 2, 5, 6, 5, 4, 7];
+      P(hx - 2, hy + 3, 3, 24, HERO.hair);              // back length, past the shoulder
+      P(hx - 1, hy + 20, 2, 6, HERO.hair);
+      P(hx + hw - 1, hy + 4, 3, 15, HERO.hair);         // front piece
+      var fr = [7, 6, 5, 3, 3, 3, 5, 6, 3, 3, 3, 3, 3, 5, 6, 5, 5, 7];
       for (var i = 0; i < hw; i++) P(hx + i, hy + 4, 1, fr[i], HERO.hair);
-      // strong brows, then eyes and winged liner
+      // brows, eyes, winged liner
       P(hx + 3, hy + 8, 3, 1, HERO.brow); P(hx + 8, hy + 8, 5, 1, HERO.brow);
       face2(hx + 4, hy + 10, HERO.iris, HERO.liner);
-      P(hx + 12, hy + 11, 2, 1, HERO.liner);            // flick of the wing
-      P(hx + 11, hy + 10, 1, 1, HERO.eyeW);             // catchlight
-      P(hx + hw - 3, hy + 13, 1, 1, HERO.hoop);         // nose stud
-      P(hx + hw - 4, hy + 15, 1, 1, HERO.skinSh);       // nose shadow
+      P(hx + 12, hy + 11, 2, 1, HERO.liner);
+      P(hx + 11, hy + 10, 1, 1, HERO.eyeW);
+      P(hx + hw - 3, hy + 13, 1, 1, HERO.hoop);
+      P(hx + hw - 4, hy + 15, 1, 1, HERO.skinSh);
       P(hx + 9, hy + 16, 4, 1, HERO.lips); P(hx + 10, hy + 16, 2, 1, HERO.lipHi);
       P(hx + 1, hy + hh - 3, 1, 2, HERO.hoop);          // jaw hoop
-      // face-framing strands last, so they fall over the cheek
-      P(hx, hy + 5, 1, 13, HERO.hair); P(hx + hw - 1, hy + 5, 1, 12, HERO.hair);
-      // chunky curb chain at the collarbone (needs dark links to read on white)
-      var cy = ty + 1;
-      P(tx + 2, cy, tw - 4, 2, HERO.chainMid);
-      for (var ci = 3; ci < tw - 5; ci += 3) { P(tx + ci, cy, 2, 1, HERO.chain); P(tx + ci, cy + 1, 1, 1, HERO.chainSh); }
-      P(tx + 2, cy + 2, tw - 4, 1, HERO.teeSh);
-      // graphic print on the white tee
-      P(tx + 6, ty + 8, 8, 8, HERO.print);
-      P(tx + 6, ty + 8, 3, 1, HERO.tee); P(tx + 6, ty + 9, 1, 1, HERO.tee);
-      P(tx + 12, ty + 14, 2, 2, HERO.tee); P(tx + 13, ty + 13, 1, 1, HERO.tee);
-      P(tx + 8, ty + 10, 3, 3, HERO.tee); P(tx + 10, ty + 12, 3, 1, HERO.tee); P(tx + 9, ty + 14, 2, 1, HERO.tee);
+      P(hx, hy + 5, 1, 14, HERO.hair); P(hx + hw - 1, hy + 5, 1, 13, HERO.hair);
+      // rim light down the front edge so a black top separates from the street
+      P(tx + tw - 1, ty + 1, 1, th - 2, HERO.teeRim);
+      // stand collar, then the chunky chain over it
+      P(tx + 6, ty, tw - 7, 2, HERO.teeHi);
+      P(tx + 3, ty + 2, tw - 6, 1, HERO.chain);
+      for (var ci = 4; ci < tw - 4; ci += 3) P(tx + ci, ty + 3, 1, 1, HERO.chainSh);
+      // full-length front zip with a pull
+      P(tx + 13, ty + 2, 1, 16, HERO.zip);
+      P(tx + 12, ty + 3, 2, 1, HERO.zip);
+      // small chest logo mark
+      P(tx + 5, ty + 7, 1, 1, HERO.stripe); P(tx + 7, ty + 7, 1, 1, HERO.stripe);
+      P(tx + 6, ty + 8, 1, 1, HERO.stripe); P(tx + 6, ty + 6, 1, 1, HERO.stripe);
       // cropped hem, then the bare tattooed midriff with an inset waist
-      var mh = Math.max(4, th - 22);
-      P(tx, ty + th - mh - 1, tw, 1, HERO.teeSh);
+      var mh = Math.max(5, th - 20);
+      P(tx, ty + th - mh - 1, tw, 1, HERO.teeHi);
       P(tx + 1, ty + th - mh, tw - 2, mh, HERO.skin);
       P(tx + 1, ty + th - mh, 1, mh, HERO.skinSh); P(tx + 1, ty + th - 1, tw - 2, 1, HERO.skinSh);
       P(tx + 11, ty + th - mh + 1, 4, 1, HERO.tattoo); P(tx + 12, ty + th - mh + 2, 2, 2, HERO.tattoo); P(tx + 10, ty + th - mh + 3, 1, 1, HERO.tattoo);
     }
-    // studded belt over the trousers
+    // studded belt and the frayed hem of the denim cut-offs
     P(hp[0], hp[1], hp[2], 2, HERO.belt);
     for (var sd = 1; sd < hp[2]; sd += 3) P(hp[0] + sd, hp[1], 1, 1, HERO.stud);
-    P(hp[0], hp[1] + hp[3] - 1, hp[2], 1, HERO.trouserSh);
-    // trouser cuff at the boot, converse eyelets and white toe caps
+    for (var fy = 0; fy < hp[2]; fy += 2) P(hp[0] + fy, hp[1] + hp[3] - 1, 1, 1, HERO.denimSh);
+    // knee-high converse: the whole shin is boot, so it needs internal detail
+    // or a raised leg reads as a black bar
     legDeco(p.legB, p.footB); legDeco(p.legF, p.footF);
     function legDeco(l, foot) {
       if (!l) return;
-      var thg = l[0], sh = l[1], ft = foot || l[2];
-      if (thg[3] >= thg[2]) P(thg[0], thg[1] + thg[3] - 2, thg[2], 1, HERO.trouserSh);
-      else P(thg[0] + thg[2] - 1, thg[1], 1, thg[3], HERO.trouserSh);
-      // Converse shaft over the ANKLE end of the shin - the end nearest the
-      // foot rect, which is the top of the shin on a high kick and the bottom
-      // everywhere else.  Same shoulder-end problem as the sleeves.
-      var vert = sh[3] >= sh[2];
-      var shaft = Math.max(4, Math.min(9, (vert ? sh[3] : sh[2]) - 3));
-      var bx = sh[0], by = sh[1], bw = sh[2], bh = sh[3];
-      if (vert) { by = (ft && (ft[1] + ft[3] / 2) < (sh[1] + sh[3] / 2)) ? sh[1] : sh[1] + sh[3] - shaft; bh = shaft; }
-      else { bx = (ft && (ft[0] + ft[2] / 2) > (sh[0] + sh[2] / 2)) ? sh[0] + sh[2] - shaft : sh[0]; bw = shaft; }
-      P(bx, by, bw, bh, HERO.shoe);
-      P(bx, by, bw, 1, shade(HERO.shoe, 1.6));
-      var i2;
-      if (vert) { for (i2 = 1; i2 < bh - 1; i2 += 2) { P(bx + 3, by + i2, 1, 1, HERO.eyelet); P(bx + 5, by + i2, 1, 1, HERO.eyelet); } }
-      else { for (i2 = 1; i2 < bw - 1; i2 += 2) { P(bx + i2, by + 2, 1, 1, HERO.eyelet); P(bx + i2, by + 4, 1, 1, HERO.eyelet); } }
+      var sh = l[1], ft = foot || l[2], i2;
+      if (sh[3] >= sh[2]) {
+        var kneeTop = !(ft && (ft[1] + ft[3] / 2) < (sh[1] + sh[3] / 2));
+        P(sh[0], kneeTop ? sh[1] : sh[1] + sh[3] - 1, sh[2], 1, HERO.bootHi);
+        for (i2 = 2; i2 < sh[3] - 1; i2 += 2) { P(sh[0] + 3, sh[1] + i2, 1, 1, HERO.eyelet); P(sh[0] + 5, sh[1] + i2, 1, 1, HERO.eyelet); }
+      } else {
+        var kneeRight = !(ft && (ft[0] + ft[2] / 2) > (sh[0] + sh[2] / 2));
+        P(kneeRight ? sh[0] + sh[2] - 1 : sh[0], sh[1], 1, sh[3], HERO.bootHi);
+        for (i2 = 2; i2 < sh[2] - 1; i2 += 2) { P(sh[0] + i2, sh[1] + 2, 1, 1, HERO.eyelet); P(sh[0] + i2, sh[1] + 4, 1, 1, HERO.eyelet); }
+      }
       if (!ft) return;
       if (ft[2] >= ft[3]) { P(ft[0] + ft[2] - 4, ft[1] + 1, 4, ft[3] - 2, HERO.shoeW); P(ft[0], ft[1] + ft[3] - 1, ft[2], 1, HERO.shoeW); }
-      else { P(ft[0] + 1, ft[1], ft[2] - 3, 3, HERO.shoeW); P(ft[0] + ft[2] - 2, ft[1] + 1, 2, ft[3] - 1, HERO.shoeW); }
+      else { P(ft[0] + 2, ft[1], ft[2] - 4, 2, HERO.shoeW); P(ft[0] + ft[2] - 2, ft[1] + 2, 2, ft[3] - 2, HERO.shoeW); }
     }
   }
 
@@ -678,15 +676,28 @@ function decorateArm(e, k, p, P, face) {
   var up = a[0], fi = a[2];
   // a horizontal upper arm has its shoulder at the end nearest the spine, so
   // the cuff belongs on the far end whichever way the arm points
-  function cuff(u) {
+  // three stripes run down the sleeve FROM THE SHOULDER, so the shoulder end
+  // has to be found: it is the end of the upper arm nearest the spine
+  function sleeve(u) {
     if (!u) return;
-    if (u[3] >= u[2]) P(u[0], u[1] + u[3] - 1, u[2], 1, HERO.teeSh);
-    else P(Math.abs(u[0]) > Math.abs(u[0] + u[2]) ? u[0] : u[0] + u[2] - 1, u[1], 1, u[3], HERO.teeSh);
+    var i;
+    if (u[3] >= u[2]) {                       // arm hanging: stripes vertical
+      for (i = 0; i < 3; i++) P(u[0] + 1 + i * 2, u[1] + 2, 1, Math.min(5, u[3] - 3), HERO.stripe);
+      P(u[0], u[1] + u[3] - 1, u[2], 1, HERO.teeHi);
+    } else {                                  // arm out: stripes stacked, at the shoulder
+      var sx = Math.abs(u[0]) < Math.abs(u[0] + u[2]) ? u[0] + 1 : u[0] + u[2] - 7;
+      for (i = 0; i < 3; i++) P(sx, u[1] + 1 + i * 2, Math.min(5, u[2] - 3), 1, HERO.stripe);
+      P(Math.abs(u[0]) > Math.abs(u[0] + u[2]) ? u[0] : u[0] + u[2] - 1, u[1], 1, u[3], HERO.teeHi);
+    }
   }
   if (k.type === 'hero') {
-    // short white sleeve: shade the cuff at the elbow end, never the shoulder
-    cuff(a[0]); cuff(p.armB && p.armB[0]);
+    sleeve(a[0]); sleeve(p.armB && p.armB[0]);
     P(fi[0] + 1, fi[1] + 3, fi[2] - 2, 1, HERO.skinSh);   // knuckle line
+    // sleeve tattoo: one connected band, never scattered dots - at this size
+    // loose specks on skin read as dirt, not ink
+    var fo = a[1];
+    if (fo[3] >= fo[2]) { P(fo[0] + 1, fo[1] + 3, fo[2] - 2, 1, HERO.tattoo); P(fo[0] + 2, fo[1] + 4, 2, 1, HERO.tattoo); }
+    else { P(fo[0] + 2, fo[1] + 1, 1, fo[3] - 2, HERO.tattoo); P(fo[0] + 3, fo[1] + 2, 1, 2, HERO.tattoo); }
   } else if (k.type === 'bruiser') {
     P(fi[0] + 1, fi[1] + 2, 1, 1, '#2a4a8a'); P(fi[0] + 3, fi[1] + 2, 1, 1, '#2a4a8a'); P(fi[0] + 5, fi[1] + 2, 1, 1, '#2a4a8a');
   } else if (k.type === 'knifer' && (e.pose === 'throwup' || e.pose === 'throw' || e.pose === 'idle' || (e.pose && e.pose.indexOf('walk') === 0))) {
@@ -1360,7 +1371,67 @@ function noise(dur, vol, when, hp) {
   s.connect(f); f.connect(g); g.connect(master);
   s.start(t0); s.stop(t0 + dur + 0.02);
 }
+// "HEE-YA" - a two-syllable kiai. There are no samples in this project, so it
+// is a sawtooth glottal source pushed through two swept bandpass formants:
+// /i/ as in "hee" sits at F1 300 / F2 2300, /a/ as in "ya" at F1 760 / F2 1180.
+// Gliding the pair at the syllable break is what makes it read as a voice
+// rather than a beep. Pitch and formants are jittered per call so repeated
+// kicks do not sound like a stuck tape.
+function voice(when, big) {
+  if (!AC) return;
+  var t0 = when || AC.currentTime;
+  var v = (0.94 + Math.random() * 0.14) * (big ? 0.86 : 1);
+  var dur = big ? 0.54 : 0.40;
+  var brk = dur * 0.46;                       // where "hee" becomes "ya"
+  var f = 430 * v;
+
+  var osc = AC.createOscillator();
+  osc.type = 'sawtooth';
+  osc.frequency.setValueAtTime(f, t0);
+  osc.frequency.linearRampToValueAtTime(f * 1.22, t0 + brk * 0.7);
+  osc.frequency.setValueAtTime(f * 1.22, t0 + brk);
+  osc.frequency.linearRampToValueAtTime(f * 0.78, t0 + brk + 0.05);
+  osc.frequency.exponentialRampToValueAtTime(f * 0.5, t0 + dur);
+
+  var f1 = AC.createBiquadFilter(), f2 = AC.createBiquadFilter();
+  f1.type = 'bandpass'; f2.type = 'bandpass';
+  f1.Q.value = 9; f2.Q.value = 12;
+  f1.frequency.setValueAtTime(300 * v, t0);
+  f1.frequency.setValueAtTime(300 * v, t0 + brk);
+  f1.frequency.linearRampToValueAtTime(760 * v, t0 + brk + 0.06);
+  f2.frequency.setValueAtTime(2300 * v, t0);
+  f2.frequency.setValueAtTime(2300 * v, t0 + brk);
+  f2.frequency.linearRampToValueAtTime(1180 * v, t0 + brk + 0.06);
+
+  // bandpass at Q 9-12 throws away most of the source energy, so the formant
+  // gains are well above 1 to land level with the other effects
+  var g1 = AC.createGain(); g1.gain.value = 2.4;
+  var g2 = AC.createGain(); g2.gain.value = 1.7;
+  var env = AC.createGain();
+  var pk = big ? 0.40 : 0.30;
+  env.gain.setValueAtTime(0.0001, t0);
+  env.gain.exponentialRampToValueAtTime(pk, t0 + 0.02);
+  env.gain.setValueAtTime(pk, t0 + brk * 0.75);
+  env.gain.exponentialRampToValueAtTime(pk * 0.28, t0 + brk);          // dip between syllables
+  env.gain.exponentialRampToValueAtTime(pk * 1.15, t0 + brk + 0.05);   // the YA accent
+  env.gain.exponentialRampToValueAtTime(0.0008, t0 + dur);
+
+  osc.connect(f1); osc.connect(f2);
+  f1.connect(g1); f2.connect(g2);
+  g1.connect(env); g2.connect(env);
+  env.connect(master);
+  osc.start(t0); osc.stop(t0 + dur + 0.03);
+  noise(0.05, 0.05, t0 + brk - 0.01, 1600);   // breath on the consonant
+}
+var voiceT = 0;
+
 var SFX = {
+  // rate limited: without this a mashed kick stacks a dozen overlapping shouts
+  kiai: function (big) {
+    if (!AC || G.t < voiceT) return;
+    voiceT = G.t + (big ? 0.70 : 0.42);
+    voice(null, big);
+  },
   swing: function () { noise(0.08, 0.12, 0, 2400); },
   punch: function () { noise(0.07, 0.35); tone(160, 'square', 0.08, 0.25, 0.5); },
   kick: function () { noise(0.12, 0.4); tone(110, 'square', 0.12, 0.3, 0.4); },
@@ -1480,11 +1551,11 @@ function pollGamepad() {
 // ============================================================================
 var ATK = {
   punch:    { reach: 52, from: 14, dmg: 1, dur: 0.24, active: [0.05, 0.16], high: true,  kb: 80,  wind: 'punchup', pose: 'punch',   sfx: 'punch' },
-  kick:     { reach: 62, from: 18, dmg: 2, dur: 0.36, active: [0.10, 0.26], high: true,  kb: 160, wind: 'kickup',  pose: 'kick',    sfx: 'kick', ghost: true },
-  sweep:    { reach: 54, from: 14, dmg: 2, dur: 0.36, active: [0.09, 0.26], high: false, kb: 140, wind: 'crouch',  pose: 'sweep',   sfx: 'kick' },
+  kick:     { reach: 62, from: 18, dmg: 2, dur: 0.36, active: [0.10, 0.26], high: true,  kb: 160, wind: 'kickup',  pose: 'kick',    sfx: 'kick', ghost: true, kiai: true },
+  sweep:    { reach: 54, from: 14, dmg: 2, dur: 0.36, active: [0.09, 0.26], high: false, kb: 140, wind: 'crouch',  pose: 'sweep',   sfx: 'kick', kiai: true },
   lowpunch: { reach: 46, from: 12, dmg: 1, dur: 0.22, active: [0.04, 0.14], high: false, kb: 70,  wind: 'crouch',  pose: 'lowpunch', sfx: 'punch' },
-  jumpkick: { reach: 56, from: 14, dmg: 3, dur: 0.5,  active: [0.02, 0.5],  high: true,  kb: 200, wind: 'jumpkick', pose: 'jumpkick', sfx: 'kick', ghost: true },
-  uppercut: { reach: 60, from: -10, dmg: 4, dur: 0.6, active: [0.02, 0.4], high: true,  kb: 260, wind: 'uppercut', pose: 'uppercut', sfx: 'heavy', ghost: true, all: true }
+  jumpkick: { reach: 56, from: 14, dmg: 3, dur: 0.5,  active: [0.02, 0.5],  high: true,  kb: 200, wind: 'jumpkick', pose: 'jumpkick', sfx: 'kick', ghost: true, kiai: true },
+  uppercut: { reach: 60, from: -10, dmg: 4, dur: 0.6, active: [0.02, 0.4], high: true,  kb: 260, wind: 'uppercut', pose: 'uppercut', sfx: 'heavy', ghost: true, all: true, kiai: true }
 };
 var ENEMY_ATK = {
   punkHigh:    { reach: 46, from: 12, wind: 0.40, active: [0, 0.12], dur: 0.30, high: true,  windPose: 'punchup', pose: 'punch', sfx: 'punch' },
@@ -1570,6 +1641,7 @@ function startAttack(p, name) {
   var a = ATK[name];
   p.state = name; p.atk = a; p.pose = a.wind; p.st = 0; p.hitSet = {}; p.ghostT = 0;
   SFX.swing();
+  if (a.kiai) SFX.kiai(name === 'uppercut');
 }
 
 function applyPlayerAttack(p, dt) {
@@ -2232,6 +2304,23 @@ window.__NF = {
   key: function (code, down) { audioInit(); onKey(code, down); },
   startStage: function (n) { G.stage = n || 1; G.demo = false; startStage(); },
   spawn: function (type, x) { var e = makeEnemy(type, x); enemies.push(e); return e; },
+  // Renders the kiai through an OfflineAudioContext so the harness can prove it
+  // is not silent and that the formants really glide from "ee" to "ya".  Swaps
+  // the module's AC/master/noiseBuf for offline ones, then puts them back.
+  renderVoice: function (big) {
+    var OAC = window.OfflineAudioContext || window.webkitOfflineAudioContext;
+    if (!OAC) return null;
+    var oc = new OAC(1, 44100, 44100);
+    var sAC = AC, sMaster = master, sNoise = noiseBuf;
+    AC = oc;
+    master = oc.createGain(); master.gain.value = 1; master.connect(oc.destination);
+    noiseBuf = oc.createBuffer(1, oc.sampleRate * 0.5, oc.sampleRate);
+    var d = noiseBuf.getChannelData(0), i;
+    for (i = 0; i < d.length; i++) d[i] = Math.random() * 2 - 1;
+    voice(0, big);
+    AC = sAC; master = sMaster; noiseBuf = sNoise;
+    return oc.startRendering();
+  },
   ai: function (dt) { demoThink(dt || 0.0167); },
   render: render
 };
