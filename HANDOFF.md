@@ -315,7 +315,12 @@ person the lead is based on.
 
 **Karen** — art-directed from three photo references, which supersede the earlier clip-only
 description. Dark hair with a **fringe kept short over the eyes** so the brows stay visible, and
-length falling past the shoulder. **Strong dark brows** and **winged liner** are the two features
+**length falling well past the shoulder to mid-chest**, tapering, with a sheen down the back
+mass. The fall is anchored to the torso rect rather than a fixed offset from the head, so it
+shortens correctly when she crouches or leans into a kick. It is drawn late, after the collar,
+chain, zip and logo, because hair hangs in front of the garment; the far arm's sleeve stripes
+are drawn later still, since hair and sleeve are both near-black and letting the fall cover them
+made the far sleeve look half erased. **Strong dark brows** and **winged liner** are the two features
 that carry the likeness at this size; brown irises in visible white with a catchlight, nose stud,
 jaw hoop, glossy lip with a highlight pixel. One **chunky curb chain** at the collarbone.
 

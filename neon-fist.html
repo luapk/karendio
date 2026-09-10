@@ -512,6 +512,21 @@ function drawFighter(e) {
   if (!flash) decorateArm(e, k, p, P, face);
 }
 
+// Three stripes run down the sleeve FROM THE SHOULDER, so the shoulder end has
+// to be found: it is the end of the upper arm nearest the spine.
+function heroSleeve(u, P) {
+  if (!u) return;
+  var i;
+  if (u[3] >= u[2]) {                       // arm hanging: stripes vertical
+    for (i = 0; i < 3; i++) P(u[0] + 1 + i * 2, u[1] + 2, 1, Math.min(5, u[3] - 3), HERO.stripe);
+    P(u[0], u[1] + u[3] - 1, u[2], 1, HERO.teeHi);
+  } else {                                  // arm out: stripes stacked, at the shoulder
+    var sx = Math.abs(u[0]) < Math.abs(u[0] + u[2]) ? u[0] + 1 : u[0] + u[2] - 7;
+    for (i = 0; i < 3; i++) P(sx, u[1] + 1 + i * 2, Math.min(5, u[2] - 3), 1, HERO.stripe);
+    P(Math.abs(u[0]) > Math.abs(u[0] + u[2]) ? u[0] : u[0] + u[2] - 1, u[1], 1, u[3], HERO.teeHi);
+  }
+}
+
 // Kit-specific detail.  Everything here is in sprite space via P().
 function decorate(e, k, p, torso, P, face, ox, oy) {
   var h = p.head, hx = h[0], hy = h[1], hw = h[2], hh = h[3];
@@ -539,12 +554,10 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
 
   function heroDeco() {
     if (!flat) {
-      // hair: blunt fringe, length past the shoulder
+      // crown and fringe. The long fall is drawn further down, after the top
+      // details, because hair hangs in front of the garment and the far arm.
       P(hx - 1, hy - 2, hw + 2, 7, HERO.hair);
       P(hx + 2, hy - 1, hw - 6, 1, HERO.hairHi);
-      P(hx - 2, hy + 3, 3, 24, HERO.hair);              // back length, past the shoulder
-      P(hx - 1, hy + 20, 2, 6, HERO.hair);
-      P(hx + hw - 1, hy + 4, 3, 15, HERO.hair);         // front piece
       var fr = [7, 6, 5, 3, 3, 3, 5, 6, 3, 3, 3, 3, 3, 5, 6, 5, 5, 7];
       for (var i = 0; i < hw; i++) P(hx + i, hy + 4, 1, fr[i], HERO.hair);
       // brows, eyes, winged liner
@@ -569,6 +582,22 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
       // small chest logo mark
       P(tx + 5, ty + 7, 1, 1, HERO.stripe); P(tx + 7, ty + 7, 1, 1, HERO.stripe);
       P(tx + 6, ty + 8, 1, 1, HERO.stripe); P(tx + 6, ty + 6, 1, 1, HERO.stripe);
+      // Long hair, per reference: well past the shoulder, down to mid-chest,
+      // tapering. Anchored to the torso rect (not a fixed offset from the
+      // head) so it shortens correctly when she crouches or leans.
+      var hb = ty + 17;
+      strand(hx - 3, hy + 5, ty + 3, 4);            // behind the neck to the shoulder
+      strand(hx - 2, ty + 3, hb - 5, 4);            // over the shoulder blade
+      strand(hx - 1, hb - 5, hb, 3);                // tapered tip
+      strand(hx + hw - 1, hy + 6, ty + 2, 3);       // front piece past the jaw
+      strand(hx + hw - 2, ty + 2, hb - 8, 3);       // onto the collarbone
+      strand(hx + hw - 3, hb - 8, hb - 4, 2);
+      P(hx - 2, hy + 12, 1, 10, HERO.hairHi);       // sheen down the back mass
+      P(hx + hw - 1, hy + 14, 1, 6, HERO.hairHi);
+      // Far-arm stripes last. Hair and sleeve are both near-black, so drawing
+      // them over the fall keeps all six stripes reading rather than leaving
+      // the far sleeve looking half erased.
+      heroSleeve(p.armB && p.armB[0], P);
       // cropped hem, then the bare tattooed midriff with an inset waist
       var mh = Math.max(5, th - 20);
       P(tx, ty + th - mh - 1, tw, 1, HERO.teeHi);
@@ -583,6 +612,7 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
     // knee-high converse: the whole shin is boot, so it needs internal detail
     // or a raised leg reads as a black bar
     legDeco(p.legB, p.footB); legDeco(p.legF, p.footF);
+    function strand(x, y0, y1, w) { if (y1 > y0) P(x, y0, w, y1 - y0, HERO.hair); }
     function legDeco(l, foot) {
       if (!l) return;
       var sh = l[1], ft = foot || l[2], i2;
@@ -676,22 +706,9 @@ function decorateArm(e, k, p, P, face) {
   var up = a[0], fi = a[2];
   // a horizontal upper arm has its shoulder at the end nearest the spine, so
   // the cuff belongs on the far end whichever way the arm points
-  // three stripes run down the sleeve FROM THE SHOULDER, so the shoulder end
-  // has to be found: it is the end of the upper arm nearest the spine
-  function sleeve(u) {
-    if (!u) return;
-    var i;
-    if (u[3] >= u[2]) {                       // arm hanging: stripes vertical
-      for (i = 0; i < 3; i++) P(u[0] + 1 + i * 2, u[1] + 2, 1, Math.min(5, u[3] - 3), HERO.stripe);
-      P(u[0], u[1] + u[3] - 1, u[2], 1, HERO.teeHi);
-    } else {                                  // arm out: stripes stacked, at the shoulder
-      var sx = Math.abs(u[0]) < Math.abs(u[0] + u[2]) ? u[0] + 1 : u[0] + u[2] - 7;
-      for (i = 0; i < 3; i++) P(sx, u[1] + 1 + i * 2, Math.min(5, u[2] - 3), 1, HERO.stripe);
-      P(Math.abs(u[0]) > Math.abs(u[0] + u[2]) ? u[0] : u[0] + u[2] - 1, u[1], 1, u[3], HERO.teeHi);
-    }
-  }
   if (k.type === 'hero') {
-    sleeve(a[0]); sleeve(p.armB && p.armB[0]);
+    heroSleeve(a[0], P);          // near arm only; the far arm is striped in
+                                  // heroDeco so the hair can hang over it
     P(fi[0] + 1, fi[1] + 3, fi[2] - 2, 1, HERO.skinSh);   // knuckle line
     // sleeve tattoo: one connected band, never scattered dots - at this size
     // loose specks on skin read as dirt, not ink
