@@ -1,224 +1,190 @@
 /*
- * NEON FIST — headless visual QA
+ * NEON FIST — headless visual QA (Playwright + Chromium)
  * ------------------------------------------------------------------
- * Runs the game under node-canvas with a stubbed DOM so sprites and
- * scenes can be inspected as PNGs without a browser.
+ * Loads neon-fist.html?qa in headless Chromium, drives frames and input
+ * through the window.__NF hook, and writes PNGs of the 384x216 canvas at
+ * 1x and 3x (nearest-neighbour) so you can judge the pixels, not the code.
  *
- *   npm install canvas
+ *   npm i -g playwright && npx playwright install chromium   (once)
  *   node qa-harness.js play     scripted session -> shots/play-*.png
- *   node qa-harness.js poses    every pose on a flat backdrop
+ *   node qa-harness.js poses    every pose on a flat backdrop, all kits
  *   node qa-harness.js ko       knockdown poses, airborne and grounded
+ *   node qa-harness.js stage 2  first screens of a given stage
  *   node qa-harness.js all
  *
- * Then look at the pixels, not the code:
- *   ffmpeg -i shots/play-04-combat.png -vf "scale=iw*4:ih*4:flags=neighbor" big.png
+ * If playwright is installed globally, run with
+ *   NODE_PATH=$(npm root -g) node qa-harness.js all
  */
 'use strict';
 
 const fs = require('fs');
 const path = require('path');
-const vm = require('vm');
-const { createCanvas } = require('canvas');
+const { chromium } = require('playwright');
 
 const GAME = path.join(__dirname, 'neon-fist.html');
 const OUT = path.join(__dirname, 'shots');
 
-// --------------------------------------------------------------------------
-// Load the game into a stubbed DOM
-// --------------------------------------------------------------------------
-function boot({ hook = false } = {}) {
-  const html = fs.readFileSync(GAME, 'utf8');
-  let src = html.match(/<script>([\s\S]*?)<\/script>/)[1];
+async function boot() {
+  const browser = await chromium.launch();
+  const page = await browser.newPage({ viewport: { width: 1152, height: 648 } });
+  page.on('pageerror', (e) => console.error('PAGE ERROR:', e.message));
+  page.on('console', (m) => { if (m.type() === 'error') console.error('CONSOLE:', m.text()); });
+  await page.goto('file://' + GAME + '?qa');
+  await page.waitForFunction(() => window.__NF);
+  fs.mkdirSync(OUT, { recursive: true });
 
-  // Expose internals for the sprite sheets by injecting before the IIFE closes.
-  if (hook) {
-    src = src.replace(/\}\)\(\);\s*$/,
-      'window.__hook = { drawFighter: drawFighter, POSE: POSE, cam: cam, ' +
-      'KIT: KIT, HERO: HERO, ctx: ctx, W: W, H: H, GY: GY };\n})();');
-  }
-
-  const dims = html.match(/<canvas[^>]*width="(\d+)"[^>]*height="(\d+)"/);
-  const canvas = createCanvas(+dims[1], +dims[2]);
-  canvas.addEventListener = () => {};
-
-  const listeners = {};
-  const stubEl = () => ({
-    addEventListener() {}, getAttribute() { return null; },
-    classList: { add() {}, remove() {} }, style: {}, textContent: ''
-  });
-
-  const state = { raf: null, t: 0 };
-  const win = {
-    addEventListener: (type, fn) => { (listeners[type] = listeners[type] || []).push(fn); },
-    requestAnimationFrame: (fn) => { state.raf = fn; return 1; },
-    performance: { now: () => state.t },
-    Math, Date, JSON, console
-    // AudioContext deliberately absent: audioInit() bails out early.
-  };
-  win.window = win;
-
-  const doc = {
-    getElementById: (id) => (id === 'c' ? canvas : stubEl()),
-    querySelectorAll: () => [],
-    addEventListener() {}
-  };
-
-  const ctx = {
-    window: win, document: doc,
-    performance: win.performance,
-    requestAnimationFrame: win.requestAnimationFrame,
-    setTimeout: () => {},
-    console, Math, Date, JSON, Array, Object, String, Number, Boolean, Error
-  };
-  vm.createContext(ctx);
-  vm.runInContext(src, ctx);
-
-  return {
-    canvas,
-    hook: win.__hook,
-    key(code, down) {
-      (listeners[down ? 'keydown' : 'keyup'] || [])
-        .forEach((fn) => fn({ code, preventDefault() {} }));
-    },
-    step(frames, ms = 16.7) {
-      for (let i = 0; i < frames; i++) {
-        state.t += ms;
-        const fn = state.raf;
-        state.raf = null;
-        if (fn) fn(state.t);
-      }
-    },
-    shot(name) {
-      fs.mkdirSync(OUT, { recursive: true });
-      fs.writeFileSync(path.join(OUT, name + '.png'), canvas.toBuffer('image/png'));
+  const g = {
+    page, browser,
+    async key(code, down) { await page.evaluate(([c, d]) => window.__NF.key(c, d), [code, down]); },
+    async tap(code, frames = 2) { await g.key(code, true); await g.step(frames); await g.key(code, false); },
+    async step(frames, ms = 16.7) { await page.evaluate(([n, m]) => { for (let i = 0; i < n; i++) window.__NF.frame(m); }, [frames, ms]); },
+    async shot(name) {
+      const data = await page.evaluate(() => {
+        const c = document.getElementById('c');
+        const big = document.createElement('canvas');
+        big.width = c.width * 3; big.height = c.height * 3;
+        const x = big.getContext('2d'); x.imageSmoothingEnabled = false;
+        x.drawImage(c, 0, 0, big.width, big.height);
+        return [c.toDataURL('image/png'), big.toDataURL('image/png')];
+      });
+      fs.writeFileSync(path.join(OUT, name + '.png'), Buffer.from(data[0].split(',')[1], 'base64'));
+      fs.writeFileSync(path.join(OUT, name + '@3x.png'), Buffer.from(data[1].split(',')[1], 'base64'));
       console.log('  ' + name + '.png');
-    }
+    },
+    async eval(fn, arg) { return page.evaluate(fn, arg); },
+    async close() { await browser.close(); }
   };
+  return g;
 }
 
 // --------------------------------------------------------------------------
-// Scripted play session
-// --------------------------------------------------------------------------
-function play() {
+async function play() {
   console.log('play:');
-  const g = boot();
+  const g = await boot();
+  await g.step(30);
+  await g.shot('play-01-title');
 
-  g.step(20);
-  g.shot('play-01-title');
+  await g.tap('Enter');
+  await g.step(20);
+  await g.shot('play-02-stage-start');
+  await g.step(80);
+  await g.shot('play-03-intro-done');
 
-  g.key('Enter', true); g.step(2); g.key('Enter', false);
-  g.step(30);
-  g.shot('play-02-stage-start');   // first prop of every stage is the Ferrari
+  await g.key('ArrowRight', true);
+  await g.step(90);
+  await g.shot('play-04-walking');
+  await g.key('ArrowRight', false);
 
-  g.key('ArrowRight', true);
-  g.step(150);
-  g.shot('play-03-walking');
-  g.key('ArrowRight', false);
-
-  for (let r = 0; r < 12; r++) {
-    g.key('KeyJ', true); g.step(3); g.key('KeyJ', false); g.step(8);
-    g.key('KeyK', true); g.step(3); g.key('KeyK', false); g.step(14);
-    g.key('ArrowRight', true); g.step(20); g.key('ArrowRight', false);
+  for (let r = 0; r < 10; r++) {
+    await g.tap('KeyJ', 3); await g.step(8);
+    await g.tap('KeyK', 3); await g.step(14);
+    await g.key('ArrowRight', true); await g.step(20); await g.key('ArrowRight', false);
   }
-  g.shot('play-04-combat');
+  await g.shot('play-05-combat');
 
-  g.key('ArrowDown', true); g.step(6);
-  g.shot('play-05-duck');
-  g.key('KeyK', true); g.step(6); g.key('KeyK', false);
-  g.shot('play-06-sweep');
-  g.key('ArrowDown', false); g.step(10);
+  await g.key('ArrowDown', true); await g.step(6);
+  await g.shot('play-06-duck');
+  await g.tap('KeyK', 3); await g.step(5);
+  await g.shot('play-07-sweep');
+  await g.key('ArrowDown', false); await g.step(12);
 
-  g.key('ArrowUp', true); g.step(2); g.key('ArrowUp', false); g.step(10);
-  g.key('KeyK', true); g.step(3); g.key('KeyK', false);
-  g.shot('play-07-jumpkick');
-  g.step(40);
+  await g.tap('ArrowUp'); await g.step(8);
+  await g.tap('KeyK', 3); await g.step(2);
+  await g.shot('play-08-jumpkick');
+  await g.step(40);
 
-  g.key('ArrowRight', true);
-  for (let r = 0; r < 60; r++) {
-    g.step(20);
-    g.key('KeyK', true); g.step(3); g.key('KeyK', false); g.step(6);
+  // force the boss: teleport near the gate
+  await g.eval(() => { const p = window.__NF.player(); const s = window.__NF.scene(); p.x = s.bossGate - 40; window.__NF.cam.x = p.x - 150; });
+  await g.key('ArrowRight', true);
+  await g.step(60);
+  await g.key('ArrowRight', false);
+  await g.step(30);
+  await g.shot('play-09-boss-intro');
+  for (let r = 0; r < 40; r++) {
+    await g.step(10);
+    await g.tap('KeyK', 3); await g.step(6);
+    await g.key('ArrowRight', true); await g.step(6); await g.key('ArrowRight', false);
   }
-  g.key('ArrowRight', false);
-  g.shot('play-08-boss');
-
-  g.step(300);
-  g.shot('play-09-later');
+  await g.shot('play-10-boss-fight');
+  await g.step(200);
+  await g.shot('play-11-later');
+  await g.close();
 }
 
 // --------------------------------------------------------------------------
-// Pose sheet — judge sprites away from the busy background
-// --------------------------------------------------------------------------
-function poses(list) {
+async function poses(list) {
   console.log('poses:');
-  const g = boot({ hook: true });
-  const h = g.hook;
-  const ctx = h.ctx;
-
-  const names = list && list.length ? list : [
-    'idle', 'walk0', 'walk1', 'walk2', 'walk3',
-    'punchup', 'punch', 'kickup', 'kick',
-    'crouch', 'sweep', 'jump', 'jumpkick', 'hurt'
-  ];
-
-  const perRow = 3;
-  const colW = 106, rowH = 100;
-  ctx.fillStyle = '#2a2438';
-  ctx.fillRect(0, 0, g.canvas.width, g.canvas.height);
-  h.cam.x = 0;
-
-  let page = 0;
-  const perPage = perRow * Math.max(1, Math.floor((g.canvas.height - 4) / rowH));
-  for (let i = 0; i < names.length; i++) {
-    const idx = i % perPage;
-    if (i > 0 && idx === 0) {
-      g.shot('poses-' + page);
+  const g = await boot();
+  const names = list && list.length ? list : ['idle', 'idle2', 'walk0', 'walk1', 'walk2', 'walk3', 'punchup', 'punch', 'lowpunch',
+    'kickup', 'kick', 'crouch', 'sweep', 'jump', 'jumpkick', 'uppercut', 'hurt', 'hurtlow', 'grab', 'grabbed', 'throwup', 'throw', 'win'];
+  const kits = ['hero', 'punk', 'bruiser', 'knifer', 'boss'];
+  // sheets get a bigger canvas: 96px sprites need 120px rows
+  await g.eval(() => { const c = document.getElementById('c'); c.width = 640; c.height = 480; });
+  for (const kit of kits) {
+    let page = 0;
+    for (let i = 0; i < names.length; i += 20) {
+      const chunk = names.slice(i, i + 20);
+      await g.eval(([chunk, kit]) => {
+        const h = window.__NF, ctx = h.ctx();
+        ctx.fillStyle = '#2a2438'; ctx.fillRect(0, 0, 640, 480);
+        h.cam.x = 0;
+        chunk.forEach((name, j) => {
+          const col = j % 5, row = Math.floor(j / 5);
+          const x = 64 + col * 128, y = 108 + row * 120;
+          ctx.fillStyle = '#1e1a2a'; ctx.fillRect(x - 60, y, 120, 1);
+          h.drawFighter({ kit: h.KIT[kit], x, y, face: 1, pose: name, state: name, flash: 0 });
+          h.textC(name, x, y + 4, '#c8c0d8', 1);
+        });
+      }, [chunk, kit]);
+      await g.shot('poses-' + kit + '-' + page);
       page++;
-      ctx.fillStyle = '#2a2438';
-      ctx.fillRect(0, 0, g.canvas.width, g.canvas.height);
     }
-    const col = idx % perRow, row = Math.floor(idx / perRow);
-    h.drawFighter({
-      type: 'hero', kit: h.KIT.hero, sc: 1,
-      x: 40 + col * colW, y: 100 + row * rowH,
-      face: 1, pose: names[i], state: names[i], flash: 0
-    });
   }
-  g.shot('poses-' + page);
   console.log('  (' + names.join(', ') + ')');
+  await g.close();
 }
 
 // --------------------------------------------------------------------------
-// Knockdown sheet — airborne tumble and grounded sprawl, all four fighters
-// --------------------------------------------------------------------------
-function ko() {
+async function ko() {
   console.log('ko:');
-  const g = boot({ hook: true });
-  const h = g.hook;
-  const ctx = h.ctx;
-
-  ctx.fillStyle = '#2a2438';
-  ctx.fillRect(0, 0, g.canvas.width, g.canvas.height);
-
-  const cast = [
-    ['punk', false], ['bruiser', false], ['boss', false],
-    ['punk', true], ['bruiser', true], ['hero', true]
-  ];
-  cast.forEach((entry, i) => {
-    const [type, grounded] = entry;
-    h.drawFighter({
-      type, kit: h.KIT[type], sc: 1,
-      x: 70 + (i % 3) * 100,
-      y: grounded ? h.GY : h.GY - 60,
-      face: 1, pose: 'idle', state: 'ko', flash: 0, grounded
+  const g = await boot();
+  await g.eval(() => {
+    const h = window.__NF, ctx = h.ctx();
+    ctx.fillStyle = '#2a2438'; ctx.fillRect(0, 0, h.W, h.H);
+    h.cam.x = 0;
+    const cast = [['punk', 'ko'], ['bruiser', 'ko2'], ['boss', 'ko'], ['hero', 'ko2'], ['punk', 'sprawl'], ['bruiser', 'sprawl'], ['hero', 'sprawl'], ['knifer', 'sprawl']];
+    cast.forEach(([type, pose], i) => {
+      const x = 70 + (i % 4) * 90, y = i < 4 ? h.GY - 70 : h.GY;
+      h.drawFighter({ kit: h.KIT[type], x, y, face: 1, pose, state: pose, flash: 0 });
+      h.textC(type + ' ' + pose, x, y + 4, '#c8c0d8', 1);
     });
   });
-  g.shot('ko-sheet');
+  await g.shot('ko-sheet');
+  await g.close();
 }
 
 // --------------------------------------------------------------------------
-const mode = process.argv[2] || 'all';
-if (mode === 'play') play();
-else if (mode === 'poses') poses(process.argv.slice(3));
-else if (mode === 'ko') ko();
-else { play(); poses(); ko(); }
-console.log('\nwrote to ' + OUT);
+async function stage(n) {
+  console.log('stage ' + n + ':');
+  const g = await boot();
+  await g.eval((n) => window.__NF.startStage(n), n);
+  await g.step(140);
+  await g.shot('stage-' + n + '-a');
+  await g.key('ArrowRight', true); await g.step(200); await g.key('ArrowRight', false);
+  await g.shot('stage-' + n + '-b');
+  await g.eval(() => { const p = window.__NF.player(); p.x += 900; window.__NF.cam.x = p.x - 150; });
+  await g.step(30);
+  await g.shot('stage-' + n + '-c');
+  await g.close();
+}
+
+// --------------------------------------------------------------------------
+(async () => {
+  const mode = process.argv[2] || 'all';
+  if (mode === 'play') await play();
+  else if (mode === 'poses') await poses(process.argv.slice(3));
+  else if (mode === 'ko') await ko();
+  else if (mode === 'stage') await stage(+(process.argv[3] || 1));
+  else { await play(); await poses(); await ko(); await stage(1); await stage(2); }
+  console.log('\nwrote to ' + OUT);
+})().catch((e) => { console.error(e); process.exit(1); });
