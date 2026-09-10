@@ -206,7 +206,8 @@ var PAL = {
 
 var HERO = {
   hair: '#1b1016', hairHi: '#43262f', skin: '#f0c8a8', skinSh: '#c99a7c',
-  eyeW: '#f6f2ee', iris: '#5a3a1e', liner: '#150b10', brow: '#241318', lips: '#c05a70', lipHi: '#e2909e',
+  eyeW: '#f6f2ee', iris: '#4a2f1a', liner: '#150b10', brow: '#241318',
+  lips: '#c05a70', lipDark: '#8a3f52', lipHi: '#e2909e', skinHi: '#fadcc4', nostril: '#a8765c',
   // black three-stripe zip crop top: near-black needs an explicit rim and a
   // lighter collar, or it merges with the shopfronts behind her
   tee: '#16121a', teeHi: '#2c2634', teeRim: '#3c3648', stripe: '#f2f0ec', zip: '#9a9aa6',
@@ -558,20 +559,55 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
       // details, because hair hangs in front of the garment and the far arm.
       P(hx - 1, hy - 2, hw + 2, 7, HERO.hair);
       P(hx + 2, hy - 1, hw - 6, 1, HERO.hairHi);
-      var fr = [7, 6, 5, 3, 3, 3, 5, 6, 3, 3, 3, 3, 3, 5, 6, 5, 5, 7];
+      // blunt fringe, cut short exactly where the brows and eyes need clearance
+      var fr = [7, 6, 3, 3, 3, 3, 4, 6, 3, 3, 3, 3, 3, 3, 4, 5, 6, 7];
       for (var i = 0; i < hw; i++) P(hx + i, hy + 4, 1, fr[i], HERO.hair);
-      // brows, eyes, winged liner
-      P(hx + 3, hy + 8, 3, 1, HERO.brow); P(hx + 8, hy + 8, 5, 1, HERO.brow);
-      face2(hx + 4, hy + 10, HERO.iris, HERO.liner);
-      P(hx + 12, hy + 11, 2, 1, HERO.liner);
-      P(hx + 11, hy + 10, 1, 1, HERO.eyeW);
-      P(hx + hw - 3, hy + 13, 1, 1, HERO.hoop);
-      P(hx + hw - 4, hy + 15, 1, 1, HERO.skinSh);
-      P(hx + 9, hy + 16, 4, 1, HERO.lips); P(hx + 10, hy + 16, 2, 1, HERO.lipHi);
-      P(hx + 1, hy + hh - 3, 1, 2, HERO.hoop);          // jaw hoop
+      // FACE.  18x22 is not much room, so bone structure goes down first and
+      // the features sit on top of it.  The head is turned slightly toward the
+      // facing direction: far eye small at u2-5, near eye at u8-12, nose at
+      // u12-15.  What carries the likeness at this size is the blunt fringe,
+      // the heavy straight brows, the liner shape and a full lower lip.
+      P(hx + 1, hy + 7, 1, 12, HERO.skinSh);            // temple and cheek turned away
+      P(hx + 2, hy + 19, 12, 1, HERO.skinSh);           // jaw underside
+      P(hx + 4, hy + 20, 8, 1, HERO.skinSh);
+      P(hx + 6, hy + 13, 4, 1, HERO.skinHi);            // cheekbone catches the light
+      P(hx + 12, hy + 8, 1, 1, HERO.skinHi);
+      P(hx + 16, hy + 9, 1, 10, HERO.skinSh);           // front cheek falls away, so the face reads oval
+      // brows: heavy, straight, tapering out and down
+      P(hx + 2, hy + 7, 4, 1, HERO.brow);
+      P(hx + 8, hy + 7, 6, 1, HERO.brow);
+      P(hx + 8, hy + 8, 2, 1, HERO.brow);               // heavier at the inner end
+      P(hx + 14, hy + 8, 1, 1, HERO.brow);
+      // eyes: two rows deep, leaving room for iris, pupil and catchlight
+      P(hx + 2, hy + 9, 4, 1, HERO.liner);              // far lash line
+      P(hx + 2, hy + 10, 3, 2, HERO.eyeW);
+      P(hx + 3, hy + 10, 2, 2, HERO.iris);
+      P(hx + 3, hy + 11, 1, 1, HERO.liner);             // far pupil
+      P(hx + 2, hy + 12, 4, 1, HERO.skinSh);
+      P(hx + 8, hy + 9, 6, 1, HERO.liner);              // near lash line
+      P(hx + 8, hy + 10, 4, 2, HERO.eyeW);
+      P(hx + 9, hy + 10, 2, 2, HERO.iris);
+      P(hx + 9, hy + 11, 1, 1, HERO.liner);             // near pupil
+      P(hx + 10, hy + 10, 1, 1, '#ffffff');             // catchlight
+      P(hx + 13, hy + 9, 1, 1, HERO.liner);             // flick of the wing
+      P(hx + 9, hy + 12, 4, 1, HERO.skinSh);            // lower lash
+      // nose: bridge, base, nostril, stud
+      P(hx + 13, hy + 11, 1, 3, HERO.skinSh);
+      P(hx + 12, hy + 14, 3, 1, HERO.skinSh);
+      P(hx + 14, hy + 14, 1, 1, HERO.nostril);
+      P(hx + 15, hy + 13, 1, 1, '#e8e4e0');             // nose stud, against the bridge
+      // lips: darker upper, fuller lower, highlight, shadow beneath
+      P(hx + 8, hy + 16, 1, 1, HERO.skinSh);
+      P(hx + 9, hy + 16, 4, 1, HERO.lipDark);
+      P(hx + 13, hy + 16, 1, 1, HERO.skinSh);
+      P(hx + 9, hy + 17, 4, 1, HERO.lips);
+      P(hx + 10, hy + 17, 2, 1, HERO.lipHi);
+      P(hx + 10, hy + 18, 2, 1, HERO.skinSh);
+      P(hx + 6, hy + hh, 6, 1, HERO.skinSh);            // jaw shadow onto the neck
       P(hx, hy + 5, 1, 14, HERO.hair); P(hx + hw - 1, hy + 5, 1, 13, HERO.hair);
+      var mh = Math.max(5, th - 20);                    // height of the bare midriff
       // rim light down the front edge so a black top separates from the street
-      P(tx + tw - 1, ty + 1, 1, th - 2, HERO.teeRim);
+      P(tx + tw - 1, ty + 1, 1, th - mh - 2, HERO.teeRim);
       // stand collar, then the chunky chain over it
       P(tx + 6, ty, tw - 7, 2, HERO.teeHi);
       P(tx + 3, ty + 2, tw - 6, 1, HERO.chain);
@@ -599,11 +635,23 @@ function decorate(e, k, p, torso, P, face, ox, oy) {
       // the far sleeve looking half erased.
       heroSleeve(p.armB && p.armB[0], P);
       // cropped hem, then the bare tattooed midriff with an inset waist
-      var mh = Math.max(5, th - 20);
+      // The waist has to be CARVED with the outline colour, not merely inset by
+      // a pixel: the torso rect is a constant 20 wide, so left alone the waist
+      // comes out as broad as the ribcage.  Narrowest through the middle,
+      // flaring back out to meet the hips.
+      var my, ins, wy;
       P(tx, ty + th - mh - 1, tw, 1, HERO.teeHi);
-      P(tx + 1, ty + th - mh, tw - 2, mh, HERO.skin);
-      P(tx + 1, ty + th - mh, 1, mh, HERO.skinSh); P(tx + 1, ty + th - 1, tw - 2, 1, HERO.skinSh);
-      P(tx + 11, ty + th - mh + 1, 4, 1, HERO.tattoo); P(tx + 12, ty + th - mh + 2, 2, 2, HERO.tattoo); P(tx + 10, ty + th - mh + 3, 1, 1, HERO.tattoo);
+      for (my = 0; my < mh; my++) {
+        ins = (my === 0) ? 2 : (my >= mh - 2 ? 3 : 4);
+        wy = ty + th - mh + my;
+        P(tx, wy, ins, 1, OUT);
+        P(tx + tw - ins, wy, ins, 1, OUT);
+        P(tx + ins, wy, tw - ins * 2, 1, HERO.skin);
+        P(tx + ins, wy, 1, 1, HERO.skinSh);
+        P(tx + tw - ins - 1, wy, 1, 1, HERO.skinHi);
+      }
+      P(tx + 5, ty + th - 1, tw - 10, 1, HERO.skinSh);
+      P(tx + 10, ty + th - mh + 2, 3, 1, HERO.tattoo); P(tx + 11, ty + th - mh + 3, 2, 1, HERO.tattoo);
     }
     // studded belt and the frayed hem of the denim cut-offs
     P(hp[0], hp[1], hp[2], 2, HERO.belt);

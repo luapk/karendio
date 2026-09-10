@@ -330,6 +330,24 @@ from the shoulder seam. Then a **bare tattooed midriff** with an inset waist, **
 with a studded belt and a frayed hem, bare thighs, and **knee-high black Converse** where the
 whole shin is boot, with eyelet pairs up the shaft and white toe caps and soles.
 
+**The face** is the part that carries the likeness, and 18x22 is not much room. Bone structure
+goes down first (temple and far cheek in shadow, jaw underside, a cheekbone highlight, the front
+cheek falling away so the head reads oval rather than as a slab), then the features on top. The
+head is turned slightly toward the facing direction: far eye small at u2-5, near eye at u8-12,
+nose at u12-15. Eyes are two rows deep so there is room for an iris, a pupil and a single white
+catchlight. What actually reads at this size is the **blunt fringe cut short exactly where the
+brows and eyes need clearance**, the **heavy straight brows**, the **liner and its outward
+flick**, and a **darker upper lip over a fuller highlighted lower lip**. Two things learned by
+rendering it large and then shrinking it: wide eye whites make her look startled, so the iris
+should dominate; and any cool-toned pixel near the lash line reads as a tear, which is why the
+nose stud sits against the bridge rather than level with the eye.
+
+**The waist has to be carved, not inset.** The torso rect is a constant 20 wide, so painting the
+midriff one pixel in from each edge leaves a waist as broad as the ribcage. The midriff loop
+paints the outline colour into the sides of the torso rect to cut the silhouette in, narrowest
+through the middle and flaring back out to meet the hips. That is also why the rim light stops
+at the hem: run full height it would hang in space beside the carved waist.
+
 Two things about that kit are load-bearing, not decoration:
 
 - **The stripes and the denim are what make her readable.** A black top on a dark street is a
